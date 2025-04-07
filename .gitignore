@@ -1,0 +1,41 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# TypeScript compilation output
+dist/
+!server/dist/stdioServer.js # Explicitly allow the compiled stdio server file
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Optional: Compiled binary addons (if any)
+# build/Release
+
+# Optional: Dependency directories (remove the comment below if you need to)
+# yarn.lock
+# package-lock.json # Keep this if you want deterministic installs
+
+# Optional: Coverage directory
+# coverage

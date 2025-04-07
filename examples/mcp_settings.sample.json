@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "bookmark-mock-server": {
+      "name": "Bookmark Mock Server",
+      "url": "ws://localhost:8080",
+      "type": "remote",
+      "enabled": true
+    }
+  }
+}

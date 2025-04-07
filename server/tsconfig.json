@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2016", // Node.jsのバージョンに合わせて調整可能
+    "module": "CommonJS",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": false, // Temporarily disable strict mode for debugging
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node" // CommonJSのための設定
+  },
+  "include": ["src/stdioServer.ts"], // Compile only the stdio server file
+  "exclude": ["node_modules"]
+}
