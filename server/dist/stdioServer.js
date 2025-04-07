@@ -21,19 +21,36 @@ server.tool("double_number", "与えられた数値を2倍にする", { num: zod
     console.error(`Tool 'double_number' called with num: ${num}`); // サーバー側のログ
     return { content: [{ type: "text", text: (num * 2).toString() }] };
 }));
-// TODO: ここにブックマーク操作用のツール (getTreeなど) を追加していく
-// server.tool(
-//   "mcp.bookmarks.getTree",
-//   "Get the entire bookmark tree",
-//   {}, // No input schema needed for getTree
-//   async () => {
-//     console.error("Tool 'mcp.bookmarks.getTree' called");
-//     // ここで実際のブックマーク取得ロジックを呼び出す (将来的には拡張機能と連携)
-//     // 今はダミーデータを返す
-//     const dummyBookmarkTree = [ /* ... ダミーデータ ... */ ];
-//     return { result: dummyBookmarkTree }; // MCPの応答形式に合わせる (resultフィールド)
-//   }
-// );
+// --- ダミーブックマークデータ ---
+const dummyBookmarkTree = [
+    {
+        id: '1',
+        title: 'ブックマークバー',
+        children: [
+            { id: '2', parentId: '1', title: 'よく使うサイト', url: 'https://example.com/frequent' },
+            { id: '3', parentId: '1', title: 'ニュース', children: [
+                    { id: '4', parentId: '3', title: 'Techニュース', url: 'https://example.com/tech-news' },
+                ] },
+        ],
+    },
+    {
+        id: '5',
+        title: 'その他のブックマーク',
+        children: [],
+    },
+];
+// ---------------------------
+// --- ブックマーク操作ツール ---
+// mcp.bookmarks.getTree ツール
+server.tool("mcp.bookmarks.getTree", "Get the entire bookmark tree structure.", {}, // No input parameters
+() => __awaiter(void 0, void 0, void 0, function* () {
+    console.error("Tool 'mcp.bookmarks.getTree' called");
+    // In the future, this would communicate with the Chrome extension
+    // For now, return dummy data
+    // Return stringified JSON data in the 'content' field with type 'text'
+    return { content: [{ type: "text", text: JSON.stringify(dummyBookmarkTree, null, 2) }] }; // Pretty print for readability
+}));
+// TODO: Add other bookmark tools (getChildren, get, create, update, move, remove, removeTree)
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const transport = new stdio_js_1.StdioServerTransport();

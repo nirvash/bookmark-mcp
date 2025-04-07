@@ -6,8 +6,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # TypeScript compilation output
-dist/
-!server/dist/stdioServer.js # Explicitly allow the compiled stdio server file
+dist/* # Ignore all files within dist/
+!server/dist/stdioServer.js # But explicitly allow the compiled stdio server file
 
 # Environment variables
 .env
