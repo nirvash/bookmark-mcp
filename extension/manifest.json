@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Bookmark MCP Connector",
+  "version": "0.1.0",
+  "description": "Connects Chrome Bookmarks to an MCP server.",
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "scripting",
+    "tabs"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "host_permissions": [
+    "ws://localhost:8765/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; connect-src 'self' ws://localhost:8765"
+  }
+}

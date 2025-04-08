@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bookmark MCP Status</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: sans-serif;
+            width: 250px;
+            padding: 10px;
+        }
+        #status {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .connected {
+            color: green;
+        }
+        .disconnected {
+            color: red;
+        }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h3>Bookmark MCP Connector</h3>
+    <div>
+        Status: <span id="status" class="disconnected">Disconnected</span>
+    </div>
+    <div>
+        Server: <span id="server-url">ws://localhost:8765</span>
+    </div>
+    <button id="reconnect-button">Reconnect</button>
+
+    <script src="popup.js"></script>
+</body>
+</html>

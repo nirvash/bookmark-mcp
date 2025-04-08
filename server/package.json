@@ -1,13 +1,13 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "dist/mockServer.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/mockServer.js",
-    "dev": "nodemon --watch src --ext ts --exec ts-node src/mockServer.ts",
-    "start:stdio": "ts-node src/stdioServer.ts", 
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/index.js",
+    "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "stdio-echo": "node dist/stdioEchoServer.js"
   },
   "keywords": [],
   "author": "",
