@@ -238,6 +238,15 @@ async function handleMCPRequest(request) {
             case 'bookmark_move':
                 result = await handleMoveBookmark(params);
                 break;
+            case 'bookmark_get_root_folders':
+                result = await handleGetRootFolders();
+                break;
+            case 'bookmark_get_children':
+                result = await handleGetChildren(params);
+                break;
+            case 'bookmark_move_multiple':
+                result = await handleMoveMultipleBookmarks(params);
+                break;
             default:
                 throw new Error(`Unsupported method: ${method}`);
         }
@@ -349,6 +358,56 @@ async function handleMoveBookmark(params) {
     return await chrome.bookmarks.move(params.id, destination);
 }
 
+async function handleGetRootFolders() {
+    return new Promise((resolve, reject) => {
+        chrome.bookmarks.getChildren('0', (bookmarkTreeNodes) => {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+                return;
+            }
+            // フォルダのみをフィルタリング
+            const folders = bookmarkTreeNodes.filter(node => !node.url);
+            resolve(folders);
+        });
+    });
+}
+
+async function handleGetChildren(params) {
+    const { id } = params;
+    return new Promise((resolve, reject) => {
+        chrome.bookmarks.getChildren(id, (bookmarkTreeNodes) => {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+                return;
+            }
+            resolve(bookmarkTreeNodes);
+        });
+    });
+}
+
+async function handleMoveMultipleBookmarks(params) {
+    const { items, parentId } = params;
+    const results = [];
+    
+    // 移動操作を順番に実行
+    for (const item of items) {
+        const result = await new Promise((resolve, reject) => {
+            chrome.bookmarks.move(item.id, {
+                parentId,
+                index: item.index
+            }, (result) => {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
+                    return;
+                }
+                resolve(result);
+            });
+        });
+        results.push(result);
+    }
+    
+    return results;
+}
 
 // --- Event Listeners & Internal Communication ---
 

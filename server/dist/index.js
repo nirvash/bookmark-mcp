@@ -49,7 +49,208 @@ server.tool("bookmark_search", "タイトルやURLで検索します", {
         id: Date.now().toString(),
         params: { query }
     };
-    // リクエストを Chrome 拡張に転送し、レスポンスを待つ
+    try {
+        const response = yield sendRequestAndWaitResponse(request);
+        return { content: [{ type: "text", text: JSON.stringify(response) }] };
+    }
+    catch (error) {
+        console.error('Failed to get response from extension:', error);
+        throw error;
+    }
+}));
+server.tool("bookmark_add", "新しいブックマークを追加します", {
+    parentId: zod_1.z.string().describe("親フォルダのID"),
+    title: zod_1.z.string().describe("ブックマークのタイトル"),
+    url: zod_1.z.string().describe("ブックマークのURL"),
+    index: zod_1.z.number().optional().describe("追加位置のインデックス")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ parentId, title, url, index }, extra) {
+    console.error(`Received bookmark_add request`);
+    const request = {
+        jsonrpc: "2.0",
+        method: "bookmark_add",
+        id: Date.now().toString(),
+        params: { parentId, title, url, index }
+    };
+    try {
+        const response = yield sendRequestAndWaitResponse(request);
+        return { content: [{ type: "text", text: JSON.stringify(response) }] };
+    }
+    catch (error) {
+        console.error('Failed to get response from extension:', error);
+        throw error;
+    }
+}));
+server.tool("bookmark_get", "指定したIDのブックマークを取得します", {
+    id: zod_1.z.string().describe("ブックマークのID")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id }, extra) {
+    console.error(`Received bookmark_get request`);
+    const request = {
+        jsonrpc: "2.0",
+        method: "bookmark_get",
+        id: Date.now().toString(),
+        params: { id }
+    };
+    try {
+        const response = yield sendRequestAndWaitResponse(request);
+        return { content: [{ type: "text", text: JSON.stringify(response) }] };
+    }
+    catch (error) {
+        console.error('Failed to get response from extension:', error);
+        throw error;
+    }
+}));
+server.tool("bookmark_update", "ブックマークを更新します", {
+    id: zod_1.z.string().describe("ブックマークのID"),
+    changes: zod_1.z.object({
+        title: zod_1.z.string().optional().describe("新しいタイトル"),
+        url: zod_1.z.string().optional().describe("新しいURL")
+    }).describe("更新する内容")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id, changes }, extra) {
+    console.error(`Received bookmark_update request`);
+    const request = {
+        jsonrpc: "2.0",
+        method: "bookmark_update",
+        id: Date.now().toString(),
+        params: { id, changes }
+    };
+    try {
+        const response = yield sendRequestAndWaitResponse(request);
+        return { content: [{ type: "text", text: JSON.stringify(response) }] };
+    }
+    catch (error) {
+        console.error('Failed to get response from extension:', error);
+        throw error;
+    }
+}));
+server.tool("bookmark_remove", "ブックマークを削除します", {
+    id: zod_1.z.string().describe("削除するブックマークのID")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id }, extra) {
+    console.error(`Received bookmark_remove request`);
+    const request = {
+        jsonrpc: "2.0",
+        method: "bookmark_remove",
+        id: Date.now().toString(),
+        params: { id }
+    };
+    try {
+        const response = yield sendRequestAndWaitResponse(request);
+        return { content: [{ type: "text", text: JSON.stringify(response) }] };
+    }
+    catch (error) {
+        console.error('Failed to get response from extension:', error);
+        throw error;
+    }
+}));
+server.tool("bookmark_remove_tree", "ブックマークツリーを削除します", {
+    id: zod_1.z.string().describe("削除するブックマークツリーのID")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id }, extra) {
+    console.error(`Received bookmark_remove_tree request`);
+    const request = {
+        jsonrpc: "2.0",
+        method: "bookmark_remove_tree",
+        id: Date.now().toString(),
+        params: { id }
+    };
+    try {
+        const response = yield sendRequestAndWaitResponse(request);
+        return { content: [{ type: "text", text: JSON.stringify(response) }] };
+    }
+    catch (error) {
+        console.error('Failed to get response from extension:', error);
+        throw error;
+    }
+}));
+server.tool("bookmark_create_folder", "新しいフォルダを作成します", {
+    parentId: zod_1.z.string().describe("親フォルダのID"),
+    title: zod_1.z.string().describe("フォルダのタイトル"),
+    index: zod_1.z.number().optional().describe("追加位置のインデックス")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ parentId, title, index }, extra) {
+    console.error(`Received bookmark_create_folder request`);
+    const request = {
+        jsonrpc: "2.0",
+        method: "bookmark_create_folder",
+        id: Date.now().toString(),
+        params: { parentId, title, index }
+    };
+    try {
+        const response = yield sendRequestAndWaitResponse(request);
+        return { content: [{ type: "text", text: JSON.stringify(response) }] };
+    }
+    catch (error) {
+        console.error('Failed to get response from extension:', error);
+        throw error;
+    }
+}));
+server.tool("bookmark_move", "ブックマークを移動します", {
+    id: zod_1.z.string().describe("移動するブックマークのID"),
+    parentId: zod_1.z.string().describe("移動先の親フォルダのID"),
+    index: zod_1.z.number().optional().describe("移動先のインデックス")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id, parentId, index }, extra) {
+    console.error(`Received bookmark_move request`);
+    const request = {
+        jsonrpc: "2.0",
+        method: "bookmark_move",
+        id: Date.now().toString(),
+        params: { id, parentId, index }
+    };
+    try {
+        const response = yield sendRequestAndWaitResponse(request);
+        return { content: [{ type: "text", text: JSON.stringify(response) }] };
+    }
+    catch (error) {
+        console.error('Failed to get response from extension:', error);
+        throw error;
+    }
+}));
+server.tool("bookmark_get_root_folders", "トップ階層のフォルダ一覧を取得します", {}, (_, extra) => __awaiter(void 0, void 0, void 0, function* () {
+    console.error(`Received bookmark_get_root_folders request`);
+    const request = {
+        jsonrpc: "2.0",
+        method: "bookmark_get_root_folders",
+        id: Date.now().toString()
+    };
+    try {
+        const response = yield sendRequestAndWaitResponse(request);
+        return { content: [{ type: "text", text: JSON.stringify(response) }] };
+    }
+    catch (error) {
+        console.error('Failed to get response from extension:', error);
+        throw error;
+    }
+}));
+server.tool("bookmark_get_children", "指定したIDの直下の子アイテムを取得します", {
+    id: zod_1.z.string().describe("親フォルダのID")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id }, extra) {
+    console.error(`Received bookmark_get_children request`);
+    const request = {
+        jsonrpc: "2.0",
+        method: "bookmark_get_children",
+        id: Date.now().toString(),
+        params: { id }
+    };
+    try {
+        const response = yield sendRequestAndWaitResponse(request);
+        return { content: [{ type: "text", text: JSON.stringify(response) }] };
+    }
+    catch (error) {
+        console.error('Failed to get response from extension:', error);
+        throw error;
+    }
+}));
+server.tool("bookmark_move_multiple", "複数のブックマークをまとめて移動します", {
+    items: zod_1.z.array(zod_1.z.object({
+        id: zod_1.z.string().describe("移動するブックマークのID"),
+        index: zod_1.z.number().optional().describe("移動先のインデックス")
+    })).describe("移動するブックマークのリスト"),
+    parentId: zod_1.z.string().describe("移動先の親フォルダのID")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ items, parentId }, extra) {
+    console.error(`Received bookmark_move_multiple request`);
+    const request = {
+        jsonrpc: "2.0",
+        method: "bookmark_move_multiple",
+        id: Date.now().toString(),
+        params: { items, parentId }
+    };
     try {
         const response = yield sendRequestAndWaitResponse(request);
         return { content: [{ type: "text", text: JSON.stringify(response) }] };
