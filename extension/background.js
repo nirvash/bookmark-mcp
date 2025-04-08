@@ -294,8 +294,77 @@ async function handleGetBookmark(params) {
     return await chrome.bookmarks.get(params.id);
 }
 
+// Helper function to limit tree depth
+function limitTreeDepth(nodes, maxDepth, currentDepth = 0) {
+    // depth が undefined の場合は制限しないので maxDepth は数値のはず
+    // maxDepth が負になることは depth=0 の場合。このときは子要素を含めない。
+    // currentDepth が maxDepth を超えたら、それ以上の子は含めない
+    if (!Array.isArray(nodes) || maxDepth < 0 || currentDepth > maxDepth) {
+        return []; // 深度制限を超えたか、無効な入力、または depth=0 の場合
+    }
+
+    return nodes.map(node => {
+        const newNode = { ...node }; // ノードをコピー
+
+        if (currentDepth === maxDepth) {
+            // 深度制限に達したら children を削除
+            delete newNode.children;
+        } else if (newNode.children) {
+            // 再帰的に子要素の深度を制限
+            newNode.children = limitTreeDepth(newNode.children, maxDepth, currentDepth + 1);
+            // 子要素が空になったフォルダは children を削除する（任意）
+            // if (newNode.children.length === 0) {
+            //     delete newNode.children;
+            // }
+        }
+        return newNode;
+    });
+}
+
 async function handleGetTree(params) {
-    return await chrome.bookmarks.getTree();
+    const folderId = params?.id;
+    const depth = params?.depth; // depth は 0, 1, 2... または undefined
+
+    let treeNodes;
+    try {
+        if (folderId) {
+            // 指定されたフォルダ以下のサブツリーを取得
+            treeNodes = await chrome.bookmarks.getSubTree(folderId);
+        } else {
+            // ツリー全体を取得
+            treeNodes = await chrome.bookmarks.getTree();
+        }
+    } catch (e) {
+        console.error(`Error getting bookmark tree (folderId: ${folderId}):`, e);
+        // IDが存在しない場合などもここでエラーになる可能性がある
+        throw new Error(`Failed to get bookmark tree: ${e.message}`);
+    }
+
+
+    // 取得したツリーが存在しない、または空の場合は空配列を返す
+    if (!treeNodes || treeNodes.length === 0) {
+        return [];
+    }
+
+    // depth が指定されている場合、階層制限を適用
+    if (depth !== undefined) {
+        // ルートノードの children に対して制限を適用
+        const rootNode = treeNodes[0];
+        if (rootNode && rootNode.children) {
+            // depth=0 の場合 maxDepth=-1 となり、limitTreeDepth は [] を返す
+            // depth=1 の場合 maxDepth=0 となり、limitTreeDepth は children のない子の配列を返す
+            rootNode.children = limitTreeDepth(rootNode.children, depth - 1, 0);
+        } else if (depth === 0 && rootNode) {
+             // depth=0 で元々 children がない場合はそのまま返す (children を削除する必要はない)
+             // 何もしない
+        } else if (rootNode) {
+             // depth > 0 だが元々 children がない場合
+             rootNode.children = []; // 念のため空配列をセット
+        }
+    }
+    // depth が undefined の場合は制限なしでそのまま返す
+
+    return treeNodes;
 }
 
 async function handleSearchBookmarks(params) {

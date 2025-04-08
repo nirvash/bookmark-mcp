@@ -22,17 +22,30 @@ let wsTransport;
 // Chrome拡張からのレスポンスを待つためのPromiseを管理
 const pendingRequests = new Map();
 // --- Define Tools ---
-server.tool("bookmark_get_tree", "ブックマークツリー全体を取得します", {}, (_, extra) => __awaiter(void 0, void 0, void 0, function* () {
-    console.error(`Received bookmark_get_tree request from roo`);
+server.tool("bookmark_get_tree", "ブックマークツリーを取得します。folderId や depth を指定して取得範囲を限定できます", {
+    folderId: zod_1.z.string().optional().describe("取得するサブツリーの親フォルダID（未指定の場合はルート）"),
+    depth: zod_1.z.number().int().min(0).optional().describe("取得する階層数。0を指定するとフォルダ情報のみ（子を含まない）、1を指定すると直下の子アイテムのみ取得（未指定の場合は制限なし）")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ folderId, depth }, extra) {
+    console.error(`Received bookmark_get_tree request from roo`, folderId ? `for folderId: ${folderId}` : '', depth ? `with depth: ${depth}` : '');
+    const params = {};
+    if (folderId) {
+        params.id = folderId;
+    }
+    if (depth !== undefined) {
+        params.depth = depth;
+    }
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_get_tree",
-        id: Date.now().toString()
+        id: Date.now().toString(),
+        params: Object.keys(params).length > 0 ? params : undefined
     };
     // リクエストを Chrome 拡張に転送し、レスポンスを待つ
     try {
         const response = yield sendRequestAndWaitResponse(request);
-        return { content: [{ type: "text", text: JSON.stringify(response) }] };
+        // 拡張機能は常に配列を返す想定だが、サブツリー取得時は単一オブジェクトの場合もあるため調整
+        const result = Array.isArray(response) ? response : [response];
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
     catch (error) {
         console.error('Failed to get response from extension:', error);
