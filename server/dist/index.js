@@ -112,19 +112,19 @@ server.tool("bookmark_get", "指定したIDのブックマークを取得しま�
         throw error;
     }
 }));
-server.tool("bookmark_update", "ブックマークを更新します", {
-    id: zod_1.z.string().describe("ブックマークのID"),
-    changes: zod_1.z.object({
+server.tool("bookmark_update", "複数のブックマークを一括で更新します。各ブックマークに対して title や url を個別に指定でき、どちらか片方の更新も可能です", {
+    items: zod_1.z.array(zod_1.z.object({
+        id: zod_1.z.string().describe("更新するブックマークのID"),
         title: zod_1.z.string().optional().describe("新しいタイトル"),
         url: zod_1.z.string().optional().describe("新しいURL")
-    }).describe("更新する内容")
-}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id, changes }, extra) {
+    })).describe("更新するブックマークのリスト")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ items }, extra) {
     console.error(`Received bookmark_update request`);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_update",
         id: Date.now().toString(),
-        params: { id, changes }
+        params: { items }
     };
     try {
         const response = yield sendRequestAndWaitResponse(request);
@@ -197,7 +197,7 @@ server.tool("bookmark_create_folder", "新しいフォルダを作成します",
         throw error;
     }
 }));
-server.tool("bookmark_move", "指定されたブックマークを新しい場所に移動します。各ブックマークに対して移動先のフォルダを個別に指定できます", {
+server.tool("bookmark_move", "指定されたブックマークを新しい場所に移動します。各ブックマークに対して移動先のフォルダを個別に指定できます。index は0から始まる位置を示し、その位置に挿入されます（例：index:0は先頭、index:5は6番目の位置）。index を省略すると末尾に追加されます。複数のブックマークを同じフォルダに移動する場合、前の操作による位置の変更が後続の index に影響することに注意してください", {
     items: zod_1.z.array(zod_1.z.object({
         id: zod_1.z.string().describe("移動するブックマークのID"),
         parentId: zod_1.z.string().describe("移動先の親フォルダID"),
@@ -255,7 +255,7 @@ server.tool("bookmark_get_children", "指定したIDの直下の子アイテム�
         throw error;
     }
 }));
-server.tool("bookmark_copy", "指定されたブックマークを新しい場所にコピーします。各ブックマークに対してコピー先のフォルダを個別に指定できます。元のブックマークはそのまま残ります", {
+server.tool("bookmark_copy", "指定されたブックマークを新しい場所にコピーします。各ブックマークに対してコピー先のフォルダを個別に指定できます。index は0から始まる位置を示し、その位置にコピーされます（例：index:0は先頭、index:5は6番目の位置）。index を省略すると末尾に追加されます。複数のブックマークを同じフォルダにコピーする場合、前の操作による位置の変更が後続の index に影響することに注意してください。元のブックマークはそのまま残ります", {
     items: zod_1.z.array(zod_1.z.object({
         sourceId: zod_1.z.string().describe("コピー元のブックマークID"),
         parentId: zod_1.z.string().describe("コピー先の親フォルダID"),

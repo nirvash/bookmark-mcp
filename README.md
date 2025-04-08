@@ -175,15 +175,16 @@ mcp_bookmark_copy({
 })
 ```
 
-#### トップ階層のフォルダ一覧を取得 / Get Root Folders
-```typescript
-mcp_bookmark_get_root_folders()
-```
-
 #### フォルダ内の子アイテムを取得 / Get Children Items
 ```typescript
+// フォルダ内の子アイテムを取得 / Get items in a folder
 mcp_bookmark_get_children({
     id: "<フォルダID>"  // 親フォルダのID / Parent folder ID
+})
+
+// トップ階層のフォルダ一覧を取得 / Get root folders
+mcp_bookmark_get_children({
+    id: "0"  // 特別なID "0" を指定してルートフォルダを取得 / Use special ID "0" to get root folders
 })
 ```
 

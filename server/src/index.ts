@@ -38,7 +38,7 @@ const pendingRequests = new Map<string | number, {
 // --- Define Tools ---
 server.tool(
     "bookmark_get_tree",
-    "ブックマークツリーを取得します。folderId や depth を指定して取得範囲を限定できます",
+    "ブックマークツリーを取得します。folderId や depth を指定して取得範囲を限定できます。各ノードには id, parentId, index, title, url (フォルダ以外), dateAdded, dateGroupModified (フォルダのみ), syncing, folderType (特定フォルダのみ) などの情報が含まれ、フォルダの場合は children プロパティに子アイテムの配列が含まれます",
     {
         folderId: z.string().optional().describe("取得するサブツリーの親フォルダID（未指定の場合はルート）"),
         depth: z.number().int().min(0).optional().describe("取得する階層数。0を指定するとフォルダ情報のみ（子を含まない）、1を指定すると直下の子アイテムのみ取得（未指定の場合は制限なし）")
@@ -132,7 +132,7 @@ server.tool(
 
 server.tool(
     "bookmark_get",
-    "指定したIDのブックマークを取得します",
+    "指定したIDのブックマークを取得します。ノードには id, parentId, index, title, url (フォルダ以外), dateAdded, dateGroupModified (フォルダのみ), syncing, folderType (特定フォルダのみ) などの情報が含まれます",
     {
         id: z.string().describe("ブックマークのID")
     },
@@ -156,21 +156,21 @@ server.tool(
 
 server.tool(
     "bookmark_update",
-    "ブックマークを更新します",
+    "複数のブックマークを一括で更新します。各ブックマークに対して title や url を個別に指定でき、どちらか片方の更新も可能です",
     {
-        id: z.string().describe("ブックマークのID"),
-        changes: z.object({
+        items: z.array(z.object({
+            id: z.string().describe("更新するブックマークのID"),
             title: z.string().optional().describe("新しいタイトル"),
             url: z.string().optional().describe("新しいURL")
-        }).describe("更新する内容")
+        })).describe("更新するブックマークのリスト")
     },
-    async ({ id, changes }, extra) => {
+    async ({ items }, extra) => {
         console.error(`Received bookmark_update request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
             method: "bookmark_update",
             id: Date.now().toString(),
-            params: { id, changes }
+            params: { items }
         };
         try {
             const response = await sendRequestAndWaitResponse(request);
@@ -288,29 +288,8 @@ server.tool(
 );
 
 server.tool(
-    "bookmark_get_root_folders",
-    "トップ階層のフォルダ一覧を取得します",
-    {},
-    async (_, extra) => {
-        console.error(`Received bookmark_get_root_folders request`);
-        const request: JSONRPCRequestMessage = {
-            jsonrpc: "2.0",
-            method: "bookmark_get_root_folders",
-            id: Date.now().toString()
-        };
-        try {
-            const response = await sendRequestAndWaitResponse(request);
-            return { content: [{ type: "text", text: JSON.stringify(response) }] };
-        } catch (error) {
-            console.error('Failed to get response from extension:', error);
-            throw error;
-        }
-    }
-);
-
-server.tool(
     "bookmark_get_children",
-    "指定したIDの直下の子アイテムを取得します",
+    "指定したIDの直下の子アイテムを取得します。各ノードには id, parentId, index, title, url (フォルダ以外), dateAdded, dateGroupModified (フォルダのみ), syncing, folderType (特定フォルダのみ) などの情報が含まれます。返却値は配列です",
     {
         id: z.string().describe("親フォルダのID")
     },

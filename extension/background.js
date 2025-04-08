@@ -238,9 +238,6 @@ async function handleMCPRequest(request) {
             case 'bookmark_move':
                 result = await handleMoveBookmark(params);
                 break;
-            case 'bookmark_get_root_folders':
-                result = await handleGetRootFolders();
-                break;
             case 'bookmark_get_children':
                 result = await handleGetChildren(params);
                 break;
@@ -375,16 +372,48 @@ async function handleSearchBookmarks(params) {
 }
 
 async function handleUpdateBookmark(params) {
-    if (!params || !params.id) {
-        throw new Error("Missing required parameter: id");
+    if (!params || !params.items) {
+        throw new Error("Missing required parameter: items");
     }
-    const changes = {};
-    if (params.title !== undefined) changes.title = params.title;
-    if (params.url !== undefined) changes.url = params.url;
-    if (Object.keys(changes).length === 0) {
-        throw new Error("No update parameters provided (title or url)");
+
+    const results = [];
+    for (const item of params.items) {
+        if (!item.id) {
+            results.push({
+                id: item.id || 'unknown',
+                success: false,
+                error: "Missing required parameter: id"
+            });
+            continue;
+        }
+
+        try {
+            // 更新内容を構築
+            const changes = {};
+            if (item.title !== undefined) changes.title = item.title;
+            if (item.url !== undefined) changes.url = item.url;
+            
+            if (Object.keys(changes).length === 0) {
+                results.push({
+                    id: item.id,
+                    success: false,
+                    error: "No update parameters provided (title or url)"
+                });
+                continue;
+            }
+
+            const updatedBookmark = await chrome.bookmarks.update(item.id, changes);
+            results.push({ id: item.id, success: true, bookmark: updatedBookmark });
+        } catch (error) {
+            console.error(`Failed to update bookmark ${item.id}:`, error);
+            results.push({ id: item.id, success: false, error: error.message });
+        }
     }
-    return await chrome.bookmarks.update(params.id, changes);
+
+    return {
+        success: results.every(r => r.success),
+        results: results
+    };
 }
 
 async function handleRemoveBookmark(params) {
@@ -468,20 +497,6 @@ async function handleMoveBookmark(params) {
         success: results.every(r => r.success),
         results: results
     };
-}
-
-async function handleGetRootFolders() {
-    return new Promise((resolve, reject) => {
-        chrome.bookmarks.getChildren('0', (bookmarkTreeNodes) => {
-            if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-                return;
-            }
-            // フォルダのみをフィルタリング
-            const folders = bookmarkTreeNodes.filter(node => !node.url);
-            resolve(folders);
-        });
-    });
 }
 
 async function handleGetChildren(params) {

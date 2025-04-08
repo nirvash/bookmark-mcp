@@ -14,7 +14,11 @@
       "args": [
         "server/dist/index.js"
       ],
-      "description": "Bookmark MCP Server (Stdio)"
+      "description": "Bookmark MCP Server (Stdio)",
+      "alwaysAllow": [
+        "bookmark_get",
+        "bookmark_get_children"
+      ]
     }
   }
 }
