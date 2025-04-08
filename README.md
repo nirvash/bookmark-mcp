@@ -113,8 +113,14 @@ mcp_bookmark_update({
 
 #### ブックマークの削除 / Remove Bookmark
 ```typescript
+// 単一のブックマークを削除 / Remove a single bookmark
 mcp_bookmark_remove({
     id: "<ブックマークID>"  // 削除するブックマークのID / ID of the bookmark to remove
+})
+
+// 複数のブックマークを削除 / Remove multiple bookmarks
+mcp_bookmark_remove({
+    id: ["<ブックマークID1>", "<ブックマークID2>", ...]  // 削除するブックマークIDの配列 / Array of bookmark IDs to remove
 })
 ```
 
@@ -134,26 +140,38 @@ mcp_bookmark_create_folder({
 })
 ```
 
-#### ブックマークの移動 / Move Bookmark
+#### ブックマークの移動 / Move Bookmarks
 ```typescript
 mcp_bookmark_move({
-    id: "<ブックマークID>",      // 移動するブックマークのID / ID of the bookmark to move
-    parentId: "<移動先フォルダID>", // 移動先の親フォルダID / Destination parent folder ID
-    index: 0                    // [オプション] 移動先のインデックス / [Optional] Destination index
+    items: [
+        {
+            id: "<ブックマークID1>",     // 移動するブックマークのID / ID of the bookmark to move
+            parentId: "<フォルダID1>",   // 移動先の親フォルダID / Destination parent folder ID
+            index: 0                    // [オプション] 移動先のインデックス / [Optional] Destination index
+        },
+        {
+            id: "<ブックマークID2>",
+            parentId: "<フォルダID2>"    // 別のフォルダに移動可能 / Can move to different folders
+        }
+    ]
 })
 ```
 
-#### 複数ブックマークの移動 / Move Multiple Bookmarks
+#### ブックマークのコピー / Copy Bookmarks
 ```typescript
-mcp_bookmark_move_multiple({
+mcp_bookmark_copy({
     items: [
-        { 
-            id: "<ブックマークID1>",  // 移動するブックマークのID / ID of the bookmark to move
-            index: 0                 // [オプション] 移動先のインデックス / [Optional] Destination index
+        {
+            sourceId: "<ブックマークID1>",    // コピー元のブックマークID / Source bookmark ID
+            parentId: "<フォルダID1>",      // コピー先の親フォルダID / Destination parent folder ID
+            index: 0                       // [オプション] コピー先のインデックス / [Optional] Destination index
         },
-        { id: "<ブックマークID2>" }
+        {
+            sourceId: "<ブックマークID2>",
+            parentId: "<フォルダID2>"        // 別のフォルダにコピー可能 / Can copy to different folders
+        }
     ],
-    parentId: "<移動先フォルダID>"    // 移動先の親フォルダID / Destination parent folder ID
+    parentId: "<コピー先フォルダID>"       // コピー先の親フォルダID / Destination parent folder ID
 })
 ```
 

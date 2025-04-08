@@ -135,8 +135,11 @@ server.tool("bookmark_update", "ブックマークを更新します", {
         throw error;
     }
 }));
-server.tool("bookmark_remove", "ブックマークを削除します", {
-    id: zod_1.z.string().describe("削除するブックマークのID")
+server.tool("bookmark_remove", "ブックマークを削除します。id を文字列または配列で指定可能です", {
+    id: zod_1.z.union([
+        zod_1.z.string().describe("削除するブックマークのID"),
+        zod_1.z.array(zod_1.z.string()).describe("削除するブックマークIDの配列")
+    ])
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id }, extra) {
     console.error(`Received bookmark_remove request`);
     const request = {
@@ -194,17 +197,19 @@ server.tool("bookmark_create_folder", "新しいフォルダを作成します",
         throw error;
     }
 }));
-server.tool("bookmark_move", "ブックマークを移動します", {
-    id: zod_1.z.string().describe("移動するブックマークのID"),
-    parentId: zod_1.z.string().describe("移動先の親フォルダのID"),
-    index: zod_1.z.number().optional().describe("移動先のインデックス")
-}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id, parentId, index }, extra) {
+server.tool("bookmark_move", "指定されたブックマークを新しい場所に移動します。各ブックマークに対して移動先のフォルダを個別に指定できます", {
+    items: zod_1.z.array(zod_1.z.object({
+        id: zod_1.z.string().describe("移動するブックマークのID"),
+        parentId: zod_1.z.string().describe("移動先の親フォルダID"),
+        index: zod_1.z.number().optional().describe("移動先のインデックス")
+    })).describe("移動するブックマークのリスト")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ items }, extra) {
     console.error(`Received bookmark_move request`);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_move",
         id: Date.now().toString(),
-        params: { id, parentId, index }
+        params: { items }
     };
     try {
         const response = yield sendRequestAndWaitResponse(request);
@@ -250,19 +255,19 @@ server.tool("bookmark_get_children", "指定したIDの直下の子アイテム�
         throw error;
     }
 }));
-server.tool("bookmark_move_multiple", "複数のブックマークをまとめて移動します", {
+server.tool("bookmark_copy", "指定されたブックマークを新しい場所にコピーします。各ブックマークに対してコピー先のフォルダを個別に指定できます。元のブックマークはそのまま残ります", {
     items: zod_1.z.array(zod_1.z.object({
-        id: zod_1.z.string().describe("移動するブックマークのID"),
-        index: zod_1.z.number().optional().describe("移動先のインデックス")
-    })).describe("移動するブックマークのリスト"),
-    parentId: zod_1.z.string().describe("移動先の親フォルダのID")
-}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ items, parentId }, extra) {
-    console.error(`Received bookmark_move_multiple request`);
+        sourceId: zod_1.z.string().describe("コピー元のブックマークID"),
+        parentId: zod_1.z.string().describe("コピー先の親フォルダID"),
+        index: zod_1.z.number().optional().describe("コピー先のインデックス")
+    })).describe("コピーするブックマークのリスト")
+}, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ items }, extra) {
+    console.error(`Received bookmark_copy request`);
     const request = {
         jsonrpc: "2.0",
-        method: "bookmark_move_multiple",
+        method: "bookmark_copy",
         id: Date.now().toString(),
-        params: { items, parentId }
+        params: { items }
     };
     try {
         const response = yield sendRequestAndWaitResponse(request);

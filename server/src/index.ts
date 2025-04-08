@@ -184,9 +184,12 @@ server.tool(
 
 server.tool(
     "bookmark_remove",
-    "ブックマークを削除します",
+    "ブックマークを削除します。id を文字列または配列で指定可能です",
     {
-        id: z.string().describe("削除するブックマークのID")
+        id: z.union([
+            z.string().describe("削除するブックマークのID"),
+            z.array(z.string()).describe("削除するブックマークIDの配列")
+        ])
     },
     async ({ id }, extra) => {
         console.error(`Received bookmark_remove request`);
@@ -258,19 +261,21 @@ server.tool(
 
 server.tool(
     "bookmark_move",
-    "ブックマークを移動します",
+    "指定されたブックマークを新しい場所に移動します。各ブックマークに対して移動先のフォルダを個別に指定できます。index は0から始まる位置を示し、その位置に挿入されます（例：index:0は先頭、index:5は6番目の位置）。index を省略すると末尾に追加されます。複数のブックマークを同じフォルダに移動する場合、前の操作による位置の変更が後続の index に影響することに注意してください",
     {
-        id: z.string().describe("移動するブックマークのID"),
-        parentId: z.string().describe("移動先の親フォルダのID"),
-        index: z.number().optional().describe("移動先のインデックス")
+        items: z.array(z.object({
+            id: z.string().describe("移動するブックマークのID"),
+            parentId: z.string().describe("移動先の親フォルダID"),
+            index: z.number().optional().describe("移動先のインデックス")
+        })).describe("移動するブックマークのリスト")
     },
-    async ({ id, parentId, index }, extra) => {
+    async ({ items }, extra) => {
         console.error(`Received bookmark_move request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
             method: "bookmark_move",
             id: Date.now().toString(),
-            params: { id, parentId, index }
+            params: { items }
         };
         try {
             const response = await sendRequestAndWaitResponse(request);
@@ -328,22 +333,22 @@ server.tool(
 );
 
 server.tool(
-    "bookmark_move_multiple",
-    "複数のブックマークをまとめて移動します",
+    "bookmark_copy",
+    "指定されたブックマークを新しい場所にコピーします。各ブックマークに対してコピー先のフォルダを個別に指定できます。index は0から始まる位置を示し、その位置にコピーされます（例：index:0は先頭、index:5は6番目の位置）。index を省略すると末尾に追加されます。複数のブックマークを同じフォルダにコピーする場合、前の操作による位置の変更が後続の index に影響することに注意してください。元のブックマークはそのまま残ります",
     {
         items: z.array(z.object({
-            id: z.string().describe("移動するブックマークのID"),
-            index: z.number().optional().describe("移動先のインデックス")
-        })).describe("移動するブックマークのリスト"),
-        parentId: z.string().describe("移動先の親フォルダのID")
+            sourceId: z.string().describe("コピー元のブックマークID"),
+            parentId: z.string().describe("コピー先の親フォルダID"),
+            index: z.number().optional().describe("コピー先のインデックス")
+        })).describe("コピーするブックマークのリスト")
     },
-    async ({ items, parentId }, extra) => {
-        console.error(`Received bookmark_move_multiple request`);
+    async ({ items }, extra) => {
+        console.error(`Received bookmark_copy request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
-            method: "bookmark_move_multiple",
+            method: "bookmark_copy",
             id: Date.now().toString(),
-            params: { items, parentId }
+            params: { items }
         };
         try {
             const response = await sendRequestAndWaitResponse(request);

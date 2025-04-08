@@ -244,8 +244,8 @@ async function handleMCPRequest(request) {
             case 'bookmark_get_children':
                 result = await handleGetChildren(params);
                 break;
-            case 'bookmark_move_multiple':
-                result = await handleMoveMultipleBookmarks(params);
+            case 'bookmark_copy':
+                result = await handleCopyBookmarks(params);
                 break;
             default:
                 throw new Error(`Unsupported method: ${method}`);
@@ -391,8 +391,27 @@ async function handleRemoveBookmark(params) {
     if (!params || !params.id) {
         throw new Error("Missing required parameter: id");
     }
-    await chrome.bookmarks.remove(params.id);
-    return { success: true }; // Indicate success
+
+    // 単一のIDまたはID配列を処理
+    const ids = Array.isArray(params.id) ? params.id : [params.id];
+    
+    // IDごとに削除を実行
+    const results = [];
+    for (const id of ids) {
+        try {
+            await chrome.bookmarks.remove(id);
+            results.push({ id, success: true });
+        } catch (error) {
+            console.error(`Failed to remove bookmark ${id}:`, error);
+            results.push({ id, success: false, error: error.message });
+        }
+    }
+
+    // 全体の結果を返す
+    return {
+        success: results.every(r => r.success),
+        results: results
+    };
 }
 
 async function handleRemoveBookmarkTree(params) {
@@ -417,14 +436,38 @@ async function handleCreateFolder(params) {
 }
 
 async function handleMoveBookmark(params) {
-    if (!params || !params.id || !params.parentId) {
-        throw new Error("Missing required parameters: id and parentId");
+    if (!params || !params.items) {
+        throw new Error("Missing required parameter: items");
     }
-    const destination = { parentId: params.parentId };
-    if (params.index !== undefined) {
-        destination.index = params.index;
+
+    const results = [];
+    for (const item of params.items) {
+        if (!item.id || !item.parentId) {
+            results.push({
+                id: item.id || 'unknown',
+                success: false,
+                error: "Missing required parameters: id and parentId"
+            });
+            continue;
+        }
+
+        try {
+            const destination = { parentId: item.parentId };
+            if (item.index !== undefined) {
+                destination.index = item.index;
+            }
+            const movedBookmark = await chrome.bookmarks.move(item.id, destination);
+            results.push({ id: item.id, success: true, bookmark: movedBookmark });
+        } catch (error) {
+            console.error(`Failed to move bookmark ${item.id}:`, error);
+            results.push({ id: item.id, success: false, error: error.message });
+        }
     }
-    return await chrome.bookmarks.move(params.id, destination);
+
+    return {
+        success: results.every(r => r.success),
+        results: results
+    };
 }
 
 async function handleGetRootFolders() {
@@ -454,28 +497,51 @@ async function handleGetChildren(params) {
     });
 }
 
-async function handleMoveMultipleBookmarks(params) {
-    const { items, parentId } = params;
-    const results = [];
-    
-    // 移動操作を順番に実行
-    for (const item of items) {
-        const result = await new Promise((resolve, reject) => {
-            chrome.bookmarks.move(item.id, {
-                parentId,
-                index: item.index
-            }, (result) => {
-                if (chrome.runtime.lastError) {
-                    reject(chrome.runtime.lastError);
-                    return;
-                }
-                resolve(result);
-            });
-        });
-        results.push(result);
+async function handleCopyBookmarks(params) {
+    if (!params || !params.items) {
+        throw new Error("Missing required parameter: items");
     }
-    
-    return results;
+
+    const results = [];
+    for (const item of params.items) {
+        if (!item.sourceId || !item.parentId) {
+            results.push({
+                sourceId: item.sourceId || 'unknown',
+                success: false,
+                error: "Missing required parameters: sourceId and parentId"
+            });
+            continue;
+        }
+
+        try {
+            // 元のブックマーク情報を取得
+            const [source] = await chrome.bookmarks.get(item.sourceId);
+            if (!source) {
+                throw new Error(`Source bookmark not found: ${item.sourceId}`);
+            }
+
+            // 新しい場所にコピー
+            const createDetails = {
+                parentId: item.parentId,
+                title: source.title,
+                url: source.url
+            };
+            if (item.index !== undefined) {
+                createDetails.index = item.index;
+            }
+
+            const newBookmark = await chrome.bookmarks.create(createDetails);
+            results.push({ sourceId: item.sourceId, success: true, newBookmark });
+        } catch (error) {
+            console.error(`Failed to copy bookmark ${item.sourceId}:`, error);
+            results.push({ sourceId: item.sourceId, success: false, error: error.message });
+        }
+    }
+
+    return {
+        success: results.every(r => r.success),
+        results: results
+    };
 }
 
 // --- Event Listeners & Internal Communication ---
