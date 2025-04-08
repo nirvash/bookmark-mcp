@@ -1,13 +1,5 @@
 {
   "mcpServers": {
-    "stdio-echo-server": {
-      "protocol": "stdio",
-      "command": "node",
-      "args": [
-        "server/dist/stdioEchoServer.js"
-      ],
-      "description": "Node.js Stdio Echo Server"
-    },
     "bookmark-mcp": {
       "protocol": "stdio",
       "command": "node",

@@ -22,11 +22,11 @@ let wsTransport;
 // Chrome拡張からのレスポンスを待つためのPromiseを管理
 const pendingRequests = new Map();
 // --- Define Tools ---
-server.tool("bookmark_get_tree", "ブックマークツリーを取得します。folderId や depth を指定して取得範囲を限定できます", {
+server.tool("bookmark_get_tree", "ブックマークツリーを取得します。folderId や depth を指定して取得範囲を限定できます。各ノードには id, parentId, index, title, url (フォルダ以外), dateAdded, dateGroupModified (フォルダのみ), syncing, folderType (特定フォルダのみ) などの情報が含まれ、フォルダの場合は children プロパティに子アイテムの配列が含まれます", {
     folderId: zod_1.z.string().optional().describe("取得するサブツリーの親フォルダID（未指定の場合はルート）"),
     depth: zod_1.z.number().int().min(0).optional().describe("取得する階層数。0を指定するとフォルダ情報のみ（子を含まない）、1を指定すると直下の子アイテムのみ取得（未指定の場合は制限なし）")
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ folderId, depth }, extra) {
-    console.error(`Received bookmark_get_tree request from roo`, folderId ? `for folderId: ${folderId}` : '', depth ? `with depth: ${depth}` : '');
+    console.debug(`Received bookmark_get_tree request from roo`, folderId ? `for folderId: ${folderId}` : '', depth ? `with depth: ${depth}` : '');
     const params = {};
     if (folderId) {
         params.id = folderId;
@@ -55,7 +55,7 @@ server.tool("bookmark_get_tree", "ブックマークツリーを取得します�
 server.tool("bookmark_search", "タイトルやURLで検索します", {
     query: zod_1.z.string().describe("検索キーワード")
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ query }, extra) {
-    console.error(`Received bookmark_search request from roo with query:`, query);
+    console.debug(`Received bookmark_search request from roo with query:`, query);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_search",
@@ -77,7 +77,7 @@ server.tool("bookmark_add", "新しいブックマークを追加します", {
     url: zod_1.z.string().describe("ブックマークのURL"),
     index: zod_1.z.number().optional().describe("追加位置のインデックス")
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ parentId, title, url, index }, extra) {
-    console.error(`Received bookmark_add request`);
+    console.debug(`Received bookmark_add request`);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_add",
@@ -93,10 +93,10 @@ server.tool("bookmark_add", "新しいブックマークを追加します", {
         throw error;
     }
 }));
-server.tool("bookmark_get", "指定したIDのブックマークを取得します", {
+server.tool("bookmark_get", "指定したIDのブックマークを取得します。ノードには id, parentId, index, title, url (フォルダ以外), dateAdded, dateGroupModified (フォルダのみ), syncing, folderType (特定フォルダのみ) などの情報が含まれます", {
     id: zod_1.z.string().describe("ブックマークのID")
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id }, extra) {
-    console.error(`Received bookmark_get request`);
+    console.debug(`Received bookmark_get request`);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_get",
@@ -119,7 +119,7 @@ server.tool("bookmark_update", "複数のブックマークを一括で更新し
         url: zod_1.z.string().optional().describe("新しいURL")
     })).describe("更新するブックマークのリスト")
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ items }, extra) {
-    console.error(`Received bookmark_update request`);
+    console.debug(`Received bookmark_update request`);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_update",
@@ -141,7 +141,7 @@ server.tool("bookmark_remove", "ブックマークを削除します。id を文
         zod_1.z.array(zod_1.z.string()).describe("削除するブックマークIDの配列")
     ])
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id }, extra) {
-    console.error(`Received bookmark_remove request`);
+    console.debug(`Received bookmark_remove request`);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_remove",
@@ -160,7 +160,7 @@ server.tool("bookmark_remove", "ブックマークを削除します。id を文
 server.tool("bookmark_remove_tree", "ブックマークツリーを削除します", {
     id: zod_1.z.string().describe("削除するブックマークツリーのID")
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id }, extra) {
-    console.error(`Received bookmark_remove_tree request`);
+    console.debug(`Received bookmark_remove_tree request`);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_remove_tree",
@@ -181,7 +181,7 @@ server.tool("bookmark_create_folder", "新しいフォルダを作成します",
     title: zod_1.z.string().describe("フォルダのタイトル"),
     index: zod_1.z.number().optional().describe("追加位置のインデックス")
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ parentId, title, index }, extra) {
-    console.error(`Received bookmark_create_folder request`);
+    console.debug(`Received bookmark_create_folder request`);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_create_folder",
@@ -204,7 +204,7 @@ server.tool("bookmark_move", "指定されたブックマークを新しい場�
         index: zod_1.z.number().optional().describe("移動先のインデックス")
     })).describe("移動するブックマークのリスト")
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ items }, extra) {
-    console.error(`Received bookmark_move request`);
+    console.debug(`Received bookmark_move request`);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_move",
@@ -220,26 +220,10 @@ server.tool("bookmark_move", "指定されたブックマークを新しい場�
         throw error;
     }
 }));
-server.tool("bookmark_get_root_folders", "トップ階層のフォルダ一覧を取得します", {}, (_, extra) => __awaiter(void 0, void 0, void 0, function* () {
-    console.error(`Received bookmark_get_root_folders request`);
-    const request = {
-        jsonrpc: "2.0",
-        method: "bookmark_get_root_folders",
-        id: Date.now().toString()
-    };
-    try {
-        const response = yield sendRequestAndWaitResponse(request);
-        return { content: [{ type: "text", text: JSON.stringify(response) }] };
-    }
-    catch (error) {
-        console.error('Failed to get response from extension:', error);
-        throw error;
-    }
-}));
-server.tool("bookmark_get_children", "指定したIDの直下の子アイテムを取得します", {
+server.tool("bookmark_get_children", "指定したIDの直下の子アイテムを取得します。各ノードには id, parentId, index, title, url (フォルダ以外), dateAdded, dateGroupModified (フォルダのみ), syncing, folderType (特定フォルダのみ) などの情報が含まれます。返却値は配列です", {
     id: zod_1.z.string().describe("親フォルダのID")
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ id }, extra) {
-    console.error(`Received bookmark_get_children request`);
+    console.debug(`Received bookmark_get_children request`);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_get_children",
@@ -262,7 +246,7 @@ server.tool("bookmark_copy", "指定されたブックマークを新しい場�
         index: zod_1.z.number().optional().describe("コピー先のインデックス")
     })).describe("コピーするブックマークのリスト")
 }, (_a, extra_1) => __awaiter(void 0, [_a, extra_1], void 0, function* ({ items }, extra) {
-    console.error(`Received bookmark_copy request`);
+    console.debug(`Received bookmark_copy request`);
     const request = {
         jsonrpc: "2.0",
         method: "bookmark_copy",
@@ -301,9 +285,9 @@ function sendRequestAndWaitResponse(request) {
 }
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        console.error("--- main() started ---");
+        console.log("--- main() started ---");
         // WebSocketトランスポートの設定と接続
-        console.error("Setting up WebSocket transport...");
+        console.log("Setting up WebSocket transport...");
         wsTransport = new WebSocketServerTransport_js_1.WebSocketServerTransport(8765);
         // Chrome拡張からのレスポンスを処理
         wsTransport.onMessage((messageStr) => {
@@ -327,10 +311,10 @@ function main() {
         });
         yield wsTransport.start();
         // Stdioトランスポートの設定と接続
-        console.error("Setting up Stdio transport...");
+        console.log("Setting up Stdio transport...");
         const stdioTransport = new stdio_js_1.StdioServerTransport();
         yield server.connect(stdioTransport);
-        console.error("--- Bookmark MCP Server running (Stdio + WebSocket) ---");
+        console.log("--- Bookmark MCP Server running (Stdio + WebSocket) ---");
         // プロセス終了時のクリーンアップ
         process.on('SIGINT', () => __awaiter(this, void 0, void 0, function* () {
             console.error('Shutting down...');

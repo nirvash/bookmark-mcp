@@ -44,7 +44,7 @@ server.tool(
         depth: z.number().int().min(0).optional().describe("取得する階層数。0を指定するとフォルダ情報のみ（子を含まない）、1を指定すると直下の子アイテムのみ取得（未指定の場合は制限なし）")
     },
     async ({ folderId, depth }, extra) => {
-        console.error(`Received bookmark_get_tree request from roo`,
+        console.debug(`Received bookmark_get_tree request from roo`,
             folderId ? `for folderId: ${folderId}` : '',
             depth ? `with depth: ${depth}` : ''
         );
@@ -84,7 +84,7 @@ server.tool(
         query: z.string().describe("検索キーワード")
     },
     async ({ query }, extra) => {
-        console.error(`Received bookmark_search request from roo with query:`, query);
+        console.debug(`Received bookmark_search request from roo with query:`, query);
         
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
@@ -113,7 +113,7 @@ server.tool(
         index: z.number().optional().describe("追加位置のインデックス")
     },
     async ({ parentId, title, url, index }, extra) => {
-        console.error(`Received bookmark_add request`);
+        console.debug(`Received bookmark_add request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
             method: "bookmark_add",
@@ -137,7 +137,7 @@ server.tool(
         id: z.string().describe("ブックマークのID")
     },
     async ({ id }, extra) => {
-        console.error(`Received bookmark_get request`);
+        console.debug(`Received bookmark_get request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
             method: "bookmark_get",
@@ -165,7 +165,7 @@ server.tool(
         })).describe("更新するブックマークのリスト")
     },
     async ({ items }, extra) => {
-        console.error(`Received bookmark_update request`);
+        console.debug(`Received bookmark_update request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
             method: "bookmark_update",
@@ -192,7 +192,7 @@ server.tool(
         ])
     },
     async ({ id }, extra) => {
-        console.error(`Received bookmark_remove request`);
+        console.debug(`Received bookmark_remove request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
             method: "bookmark_remove",
@@ -216,7 +216,7 @@ server.tool(
         id: z.string().describe("削除するブックマークツリーのID")
     },
     async ({ id }, extra) => {
-        console.error(`Received bookmark_remove_tree request`);
+        console.debug(`Received bookmark_remove_tree request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
             method: "bookmark_remove_tree",
@@ -242,7 +242,7 @@ server.tool(
         index: z.number().optional().describe("追加位置のインデックス")
     },
     async ({ parentId, title, index }, extra) => {
-        console.error(`Received bookmark_create_folder request`);
+        console.debug(`Received bookmark_create_folder request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
             method: "bookmark_create_folder",
@@ -270,7 +270,7 @@ server.tool(
         })).describe("移動するブックマークのリスト")
     },
     async ({ items }, extra) => {
-        console.error(`Received bookmark_move request`);
+        console.debug(`Received bookmark_move request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
             method: "bookmark_move",
@@ -294,7 +294,7 @@ server.tool(
         id: z.string().describe("親フォルダのID")
     },
     async ({ id }, extra) => {
-        console.error(`Received bookmark_get_children request`);
+        console.debug(`Received bookmark_get_children request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
             method: "bookmark_get_children",
@@ -322,7 +322,7 @@ server.tool(
         })).describe("コピーするブックマークのリスト")
     },
     async ({ items }, extra) => {
-        console.error(`Received bookmark_copy request`);
+        console.debug(`Received bookmark_copy request`);
         const request: JSONRPCRequestMessage = {
             jsonrpc: "2.0",
             method: "bookmark_copy",
@@ -362,10 +362,10 @@ async function sendRequestAndWaitResponse(request: JSONRPCRequestMessage): Promi
 }
 
 async function main() {
-    console.error("--- main() started ---");
+    console.log("--- main() started ---");
 
     // WebSocketトランスポートの設定と接続
-    console.error("Setting up WebSocket transport...");
+    console.log("Setting up WebSocket transport...");
     wsTransport = new WebSocketServerTransport(8765);
 
     // Chrome拡張からのレスポンスを処理
@@ -391,11 +391,11 @@ async function main() {
     await wsTransport.start();
 
     // Stdioトランスポートの設定と接続
-    console.error("Setting up Stdio transport...");
+    console.log("Setting up Stdio transport...");
     const stdioTransport = new StdioServerTransport();
     await server.connect(stdioTransport);
     
-    console.error("--- Bookmark MCP Server running (Stdio + WebSocket) ---");
+    console.log("--- Bookmark MCP Server running (Stdio + WebSocket) ---");
 
     // プロセス終了時のクリーンアップ
     process.on('SIGINT', async () => {

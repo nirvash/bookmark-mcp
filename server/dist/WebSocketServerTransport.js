@@ -21,7 +21,7 @@ class WebSocketServerTransport {
             return new Promise((resolve) => {
                 this.setupWebSocketServer();
                 this.wss.once('listening', () => {
-                    console.error(`WebSocket Server listening on port ${this.wss.address().port}`);
+                    console.log(`WebSocket Server listening on port ${this.wss.address().port}`);
                     resolve();
                 });
             });
@@ -67,7 +67,7 @@ class WebSocketServerTransport {
     }
     setupWebSocketServer() {
         this.wss.on('connection', (ws) => {
-            console.error('New WebSocket client connected');
+            console.log('New WebSocket client connected');
             this.clients.add(ws);
             ws.on('message', (data) => {
                 if (this.messageHandler) {
@@ -75,7 +75,7 @@ class WebSocketServerTransport {
                 }
             });
             ws.on('close', () => {
-                console.error('WebSocket client disconnected');
+                console.log('WebSocket client disconnected');
                 this.clients.delete(ws);
             });
             ws.on('error', (error) => {
