@@ -8,7 +8,11 @@ Chrome bookmark management extension using MCP (Machine Control Protocol).
 このプロジェクトは、LLMからChrome ブックマークを操作するためのMCPツールです。  
 This project is an MCP tool for manipulating Chrome bookmarks from LLM.
 
-コンポーネント構成：  
+## ScreenShot
+![screenshot](./docs/screenshot1.png)
+![screenshot](./docs/screenshot2.png)
+
+## コンポーネント構成：  
 Components:
 
 1. Chrome拡張機能 / Chrome Extension
